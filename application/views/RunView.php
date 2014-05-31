@@ -13,7 +13,7 @@
 
     <div id="body">
 
-        <form name="f">
+        <form name="f" method=post action='test_controller/write'>
             <input id="q" autofocus>
             <script>
                 if (!("autofocus" in document.createElement("input"))) {
