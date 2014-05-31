@@ -4,7 +4,7 @@ class Run extends CI_Controller {
 
     public function index()
     {
-        $this->load->view('run_message');
+        $this->load->view('RunView');
     }
 }
 
