@@ -1,12 +1,12 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Run extends CI_Controller {
+class RunController extends CI_Controller {
 
     public function index()
     {
-        $this->load->view('RunView');
+        $this->load->view('RunView.php');
     }
 }
 
-/* End of file run.php */
-/* Location: ./application/controllers/run.php */
+/* End of file RunController.php */
+/* Location: ./application/controllers/RunController.php */
