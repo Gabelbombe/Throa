@@ -39,9 +39,10 @@
 */
 
 $route = [
-    'default_controller'    => 'RunController.php',
+    'default_controller'    => 'RunController',
     '404_override'          => '',
 ];
+
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

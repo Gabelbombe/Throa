@@ -13,14 +13,16 @@
 
     <div id="body">
 
-        <form name="f" method=post action='test_controller/write'>
-            <input id="q" autofocus>
+        <?php echo form_open('WriteController', ['name' => 'q', ]); ?>
+
+            <input id="q" name="uid" autofocus />
+            <input id="q" name="aid" autofocus />
             <script>
                 if (!("autofocus" in document.createElement("input"))) {
                     document.getElementById("q").focus();
                 }
             </script>
-            <input type="submit" value="Post">
+            <?php echo form_submit('', 'log'); ?>
         </form>
     </div>
 
