@@ -1,13 +1,13 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class WriteController extends CI_Controller
+Class WriteController Extends CI_Controller //Implements WriteInterface
 {
 
     private $filter = [];
 
     public function index()
     {
-        $this->filter();
+        $this->filter()->filter();
 
         $this->load->helper('url');
         redirect('/', 'refresh');
@@ -22,16 +22,28 @@ class WriteController extends CI_Controller
                 'aid' => FILTER_SANITIZE_ENCODED,
             ]);
 
-            if (! preg_match('\s', $filter))
-                $this->filter = array_filter(array_map('trim', $filter));
 
-            echo 'reg: ' .  print_r($filter,1);
-            echo 'this: '.  print_r($this->filter,1);
-            die;
+            foreach (array_keys($filter) AS $asset)
+            {
+                // check for empty based off of filters array keys
+                if (! preg_match('/\w/', $asset)) $this->filter = array_filter(array_map('trim', $filter));
+            }
 
+            if (! empty($this->filter)) $this->addToQueue();
+
+                unset($this->filter); //oikology
         }
 
-        return false;
+        return $this;
+    }
+
+    private function addToQueue()
+    {
+        if (! empty($this->filter) && count($this->filter) > 2)
+        {
+
+        }
+        return $this;
     }
 }
 
