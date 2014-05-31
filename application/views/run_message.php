@@ -2,19 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Welcome to CodeIgniter</title>
-
-
-    <link src="/static/css/base.css" />
+    <title>App Runner</title>
+    <link href="/static/css/base.css"  media="all" rel="stylesheet" type="text/css" />
 
 </head>
 <body>
 
 <div id="container">
-    <h1>Welcome to CodeIgniter!</h1>
+    <h1>Logger....</h1>
 
     <div id="body">
-        hit
+
+        <form name="f">
+            <input id="q" autofocus>
+            <script>
+                if (!("autofocus" in document.createElement("input"))) {
+                    document.getElementById("q").focus();
+                }
+            </script>
+            <input type="submit" value="Post">
+        </form>
     </div>
 
     <p class="footer">Page rendered in <strong>{elapsed_time}</strong> seconds</p>
