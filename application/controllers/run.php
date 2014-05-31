@@ -8,5 +8,5 @@ class Run extends CI_Controller {
     }
 }
 
-/* End of file welcome.php */
-/* Location: ./application/controllers/welcome.php */
+/* End of file run.php */
+/* Location: ./application/controllers/run.php */
