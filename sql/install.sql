@@ -7,11 +7,7 @@ CREATE TABLE `fls_queue` (
   `aid`     varchar(255)      DEFAULT NULL              COMMENT 'Asset identifier from location',
   `loc`     ENUM('in', 'tw')  DEFAULT 'in'              COMMENT 'Incoming location, in=instagram, tw=twitter',
   `grant`   tinyint(1)        NOT NULL DEFAULT FALSE    COMMENT 'Was perms granted bool 0/1',
-  PRIMARY KEY (`id`),
-  KEY uid (uid),
-  CONSTRAINT fk_queue FOREIGN KEY (uid) REFERENCES approved (uid)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  PRIMARY KEY (`id`)
 ) ENGINE=`InnoDB` DEFAULT CHARSET=`utf8`;
 
 
