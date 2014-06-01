@@ -6,7 +6,7 @@ Class AdapterModel
 {
     public function __construct()
     {
-        print_r($this->load->library('database'));
+        print_r($this->load->database());
         die('adapting');
     }
 

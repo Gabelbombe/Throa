@@ -48,11 +48,6 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-foreach(['DBHOST', 'DBUSER', 'DBPASS', 'DBNAME'] AS $value)
-{
-    echo getenv($value) . "<br>";
-}
-
 $db['default']['hostname'] = getenv('DBHOST');
 $db['default']['username'] = getenv('DBUSER');
 $db['default']['password'] = getenv('DBPASS');
@@ -68,9 +63,6 @@ $db['default']['dbcollat'] = 'utf8_general_ci';
 $db['default']['swap_pre'] = '';
 $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
-
-$db['default']['pconnect'] = FALSE;
-$db['default']['db_debug'] = FALSE;
 
 /* End of file database.php */
 /* Location: ./application/config/database.php */
