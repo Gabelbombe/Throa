@@ -1169,6 +1169,7 @@ class CI_Loader {
 			if (in_array('database', $autoload['libraries']))
 			{
 				$this->database();
+
 				$autoload['libraries'] = array_diff($autoload['libraries'], array('database'));
 			}
 
@@ -1184,6 +1185,7 @@ class CI_Loader {
 		{
 			$this->model($autoload['model']);
 		}
+
 	}
 
 	// --------------------------------------------------------------------

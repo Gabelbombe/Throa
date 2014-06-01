@@ -15,11 +15,13 @@
 
         <?php echo form_open('WriteController', ['name' => 'q', ]); ?>
 
-            <input id="q" name="uid" autofocus />
-            <input id="q" name="aid" autofocus />
+            <input type='input'  id="u" name="uid" autofocus />
+            <input type='input'  id="a" name="aid" />
+            <input type='hidden' id="l" name="loc" value="twitter" />
+
             <script>
                 if (!("autofocus" in document.createElement("input"))) {
-                    document.getElementById("q").focus();
+                    document.getElementById("u").focus();
                 }
             </script>
             <?php echo form_submit('', 'log'); ?>

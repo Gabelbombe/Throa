@@ -59,7 +59,6 @@ function &DB($params = '', $active_record_override = NULL)
 	}
 	elseif (is_string($params))
 	{
-
 		/* parse the URL from the DSN string
 		 *  Database settings can be passed as discreet
 		 *  parameters or as a data source name in the first
@@ -101,7 +100,6 @@ function &DB($params = '', $active_record_override = NULL)
 			}
 		}
 	}
-
 	// No DB specified yet?  Beat them senseless...
 	if ( ! isset($params['dbdriver']) OR $params['dbdriver'] == '')
 	{
