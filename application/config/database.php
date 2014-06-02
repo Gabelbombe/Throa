@@ -49,8 +49,8 @@ $active_group = 'default';
 $active_record = TRUE;
 
 $db['default']['hostname'] = getenv('DBHOST');
-$db['default']['username'] = getenv('DBUSER');
-$db['default']['password'] = getenv('DBPASS');
+$db['default']['username'] = 'root';
+$db['default']['password'] = 'm1+n3{$S*?.3/(-aK(MJg$~ld_.".G9E';
 $db['default']['database'] = getenv('DBNAME');
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';

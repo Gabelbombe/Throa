@@ -1,5 +1,11 @@
  Options +FollowSymLinks
 
+  SetEnv DBHOST localhost
+  SetEnv DBUSER 'root'
+  SetEnv DBPASS 'm1+n3{$S*?.3/(-aK(MJg$~ld_.".G9E'
+  SetEnv DBNAME throa
+  SetEnv DBPORT 3306
+
  <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
