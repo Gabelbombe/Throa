@@ -1,14 +1,14 @@
 <?php
 
-Use \Doctrine\ORM\Mapping                                AS ORM,
-    \Doctrine\ORM\Tools\DisconnectedClassMetadataFactory AS DisconnectedClassMetadataFactory,
-    \Doctrine\ORM\Tools\EntityGenerator                  AS EntityGenerator;
+Use \Doctrine\ORM\Mapping AS ORM;
 
 /**
+ * Queue
+ *
  * @ORM\Table(name="fls_queue")
  * @ORM\Entity
  */
-Class Queue Extends CI_Model
+Class Queue
 {
     const LOC_TWITTER   = 'tw';
     const LOC_INSTAGRAM = 'in';

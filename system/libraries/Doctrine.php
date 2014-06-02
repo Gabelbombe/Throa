@@ -8,7 +8,10 @@ USE Doctrine\Common\ClassLoader,
     Doctrine\DBAL\Logging\EchoSQLLogger,
     Doctrine\ORM\Mapping\Driver\DatabaseDriver,
     Doctrine\ORM\Tools\DisconnectedClassMetadataFactory,
-    Doctrine\ORM\Tools\EntityGenerator;
+    Doctrine\ORM\Tools\EntityGenerator,
+    Doctrine\ORM\Mapping\Driver\AnnotationDriver,       // here down used to read Entity comments
+    Doctrine\Common\Annotations\AnnotationReader,
+    Doctrine\Common\Annotations\AnnotationRegistry;
 
 Class Doctrine Extends CI_Model
 {
@@ -44,7 +47,7 @@ Class Doctrine Extends CI_Model
 
         // Set up logger
         $logger = New EchoSQLLogger;
-        $config->setSQLLogger($logger);
+//         $config->setSQLLogger($logger);
 
         $config->setAutoGenerateProxyClasses( TRUE );
 
@@ -57,14 +60,18 @@ Class Doctrine Extends CI_Model
             'dbname'    => $this->db->database,
         ];
 
+        $driver = new AnnotationDriver(new AnnotationReader(), APPPATH.'models/entities');
+
+        // registering noop annotation autoloader - allow all annotations by default
+        AnnotationRegistry::registerLoader('class_exists');
+        $config->setMetadataDriverImpl($driver);
+
         // Create EntityManager
         $this->em = EntityManager::create($connectionOptions, $config);
 
         /** @var $em \Doctrine\ORM\EntityManager */
         $platform = $this->em->getConnection()->getDatabasePlatform();
         $platform->registerDoctrineTypeMapping('enum', 'string');
-
-        $this->generateClasses();
     }
 
     /**

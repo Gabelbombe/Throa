@@ -9,6 +9,10 @@ Class Adapter Extends CI_Model
     {
         parent::__construct();
 
+
+        $doctrine = New Doctrine();
+        print_r($doctrine->generateClasses());
+
         $this->em = $this->doctrine->em;
     }
 
@@ -32,28 +36,33 @@ Class Adapter Extends CI_Model
 
     private function bulkQueue()
     {
-        $this->load->model('Queue');
+        $this->load->model('Entities/FlsQueue');
 
         $batchSize = 20;
         for ($i = 0; $i <= count($this->logger['filter']); ++$i)
         {
-            $queue = New Queue();
+            $queue = New FlsQueue();
+
 
             $queue->setGrant(false)
-                  ->setUID($this->logger['filter'][$i]['uid'])
-                  ->setAID($this->logger['filter'][$i]['aid'])
-                  ->setLOC($this->logger['filter'][$i]['loc']);
+                  ->setUid($this->logger['filter'][$i]['uid'])
+                  ->setAid($this->logger['filter'][$i]['aid'])
+                  ->setLoc($this->logger['filter'][$i]['loc']);
 
-            $this->em->persists($queue);
+            try {
+                //save to database
+                $this->em->persist($queue);
 
-            if (0 === ($i % $batchSize))
-            {
-                $this->em->flush(); // Executes all updates.
-                $this->em->clear(); // Detaches all objects from Doctrine!
+                if (0 === ($i % $batchSize))
+                {
+                    $this->em->flush(); // Executes all updates.
+                    $this->em->clear(); // Detaches all objects from Doctrine!
+                }
+            } catch(Exception $e) {
+                Throw New PDOException($e->getMessage());
             }
         }
     }
-
 
     /**
      * Non-Magic otherwise interferes with Doctrine
