@@ -1,12 +1,12 @@
 <?php
 
-//require APPPATH . '/config/autoload.php';
-
 Class AdapterModel
 {
     public function __construct()
     {
-        print_r($this->db->query('SELECT * FROM fls_approved'));
+        $this->load->library('database');
+
+//        print_r($this->db->query('SELECT * FROM fls_approved'));
         die('adapting');
     }
 
