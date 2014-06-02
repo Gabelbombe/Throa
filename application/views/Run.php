@@ -13,7 +13,7 @@
 
     <div id="body">
 
-        <?php echo form_open('WriteController', ['name' => 'q', ]); ?>
+        <?php echo form_open('write', ['name' => 'q', ]); ?>
 
             <input type='input'  id="u" name="uid" autofocus />
             <input type='input'  id="a" name="aid" />
