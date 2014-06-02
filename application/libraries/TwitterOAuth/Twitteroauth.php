@@ -16,7 +16,7 @@ require_once(APPPATH.'/third_party/OAuth.php');
 Class TwitterOAuth
 {
 	/* Contains the last HTTP status code returned. */
-	public $http_code;
+	public $httpCode;
 	/* Contains the last API call. */
 	public $url;
 	/* Set up the API root URL. */
@@ -24,17 +24,17 @@ Class TwitterOAuth
 	/* Set timeout default. */
 	public $timeout = 30;
 	/* Set connect timeout. */
-	public $connecttimeout = 30; 
+	public $connectTimeout = 30; 
 	/* Verify SSL Cert. */
-	public $ssl_verifypeer = FALSE;
+	public $sslVerifyPeer = FALSE;
 	/* Response format. */
 	public $format = 'json';
 	/* Decode returned json data. */
 	public $decode_json = TRUE;
 	/* Contains the last HTTP headers returned. */
-	public $http_info;
-	/* Set the useragnet. */
-	public $useragent = 'TwitterOAuth for CodeIgniter';
+	public $httpInfo;
+	/* Set the User Agent. */
+	public $ua = 'TwitterOAuth for CodeIgniter';
 	/* Immediately retry the API call if the response was not successful. */
 	//public $retry = TRUE;
 
@@ -48,27 +48,27 @@ Class TwitterOAuth
 	/**
 	 * Set API URLS
 	 */
-	function accessTokenURL()	{ return 'https://api.twitter.com/oauth/access_token';  }
-	function authenticateURL()  { return 'https://api.twitter.com/oauth/authenticate';  }
-	function authorizeURL()		{ return 'https://api.twitter.com/oauth/authorize';     }
-	function requestTokenURL()  { return 'https://api.twitter.com/oauth/request_token'; }
+    public function accessTokenURL()    { return 'https://api.twitter.com/oauth/access_token';  }
+    public function authenticateURL()   { return 'https://api.twitter.com/oauth/authenticate';  }
+    public function authorizeURL()		{ return 'https://api.twitter.com/oauth/authorize';     }
+    public function requestTokenURL()   { return 'https://api.twitter.com/oauth/request_token'; }
 
 	/**
 	 * Debug helpers
 	 */
-	function lastStatusCode() { return $this->http_status;   }
-	function lastAPICall()    { return $this->last_api_call; }
+    public function lastStatusCode() { return $this->httpStatus;    }
+    public function lastAPICall()    { return $this->last_api_call; }
 
 	/**
 	 * construct TwitterOAuth object
 	 */
-	public function create($consumer_key, $consumer_secret, $oauth_token = NULL, $oauth_token_secret = NULL)
+	public function create($consumerKey, $consumerSecret, $oauthToken = NULL, $oauthTokenSecret = NULL)
     {
-		$this->sha1_method = new OAuthSignatureMethod_HMAC_SHA1();
-		$this->consumer = new OAuthConsumer($consumer_key, $consumer_secret);
-		if (! empty($oauth_token) && ! empty($oauth_token_secret))
+		$this->sha1Method = new OAuthSignatureMethod_HMAC_SHA1();
+		$this->consumer = new OAuthConsumer($consumerKey, $consumerSecret);
+		if (! empty($oauthToken) && ! empty($oauthTokenSecret))
         {
-			$this->token = new OAuthConsumer($oauth_token, $oauth_token_secret);
+			$this->token = new OAuthConsumer($oauthToken, $oauthTokenSecret);
 		} else {
 			$this->token = NULL;
 		}
@@ -78,13 +78,15 @@ Class TwitterOAuth
     /**
      * Get a request_token from Twitter
      *
-     * @param $oauth_callback
+     * @param $oauthCallback
      * @return array    key/value array containing oauth_token and oauth_token_secret
      */
-    public function getRequestToken($oauth_callback)
+    public function getRequestToken($oauthCallback)
     {
-		$parameters = [];
-		$parameters['oauth_callback'] = $oauth_callback;
+		$parameters = [
+            'oauth_callback' => $oauthCallback,
+        ];
+
 		$request = $this->oAuthRequest($this->requestTokenURL(), 'POST', $parameters);
 		$token = OAuthUtil::parse_parameters($request);
 		$this->token = New OAuthConsumer($token['oauth_token'], $token['oauth_token_secret']);
@@ -115,7 +117,7 @@ Class TwitterOAuth
      * Exchange request token and secret for an access token and
      * secret, to sign API calls.
      *
-     * @param $oauth_verifier
+     * @param $oauthVerifier
      *
      * @return array(
      * "oauth_token"         => "the-access-token",
@@ -124,10 +126,12 @@ Class TwitterOAuth
      *	"screen_name"        => "abraham"
      * )
      */
-    public function getAccessToken($oauth_verifier)
+    public function getAccessToken($oauthVerifier)
     {
-		$parameters = array();
-		$parameters['oauth_verifier'] = $oauth_verifier;
+		$parameters = [
+            'oauth_verifier' => $oauthVerifier
+        ];
+
 		$request = $this->oAuthRequest($this->accessTokenURL(), 'GET', $parameters);
 		$token = OAuthUtil::parse_parameters($request);
 		$this->token = new OAuthConsumer($token['oauth_token'], $token['oauth_token_secret']);
@@ -221,7 +225,7 @@ Class TwitterOAuth
 			$url = "{$this->host}{$url}.{$this->format}";
 
 		$request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, $method, $url, $parameters);
-		$request->sign_request($this->sha1_method, $this->consumer, $this->token);
+		$request->sign_request($this->sha1Method, $this->consumer, $this->token);
 
         return ('get' === strtolower($method))
             ? $this->http($request->to_url(), 'GET')
@@ -239,7 +243,7 @@ Class TwitterOAuth
      */
     public function http($url, $method, $data = NULL)
     {
-		$this->http_info = [];
+		$this->httpInfo = [];
 
         $params = [];
         switch ($method)
@@ -258,9 +262,9 @@ Class TwitterOAuth
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
-            CURLOPT_USERAGENT       => $this->useragent,
-            CURLOPT_CONNECTTIMEOUT  => $this->connecttimeout,
-            CURLOPT_SSL_VERIFYPEER  => $this->ssl_verifypeer,
+            CURLOPT_USERAGENT       => $this->ua,
+            CURLOPT_CONNECTTIMEOUT  => $this->connectTimeout,
+            CURLOPT_SSL_VERIFYPEER  => $this->sslVerifyPeer,
             CURLOPT_TIMEOUT         => $this->timeout,
             CURLOPT_HEADERFUNCTION  => [$this, 'getHeader'],
             CURLOPT_HTTPHEADER      => ['Expect:'],
@@ -271,8 +275,8 @@ Class TwitterOAuth
         if (FALSE === ($response = curl_exec($ch)))
             Throw New HttpException("Error with {$method} $url with error:\n", print_r(curl_error($ch), 1));
 
-            $this->http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $this->http_info = array_merge($this->http_info, curl_getinfo($ch));
+            $this->httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $this->httpInfo = array_merge($this->httpInfo, curl_getinfo($ch));
             curl_close ($ch);
 
     		$this->url = $url;
