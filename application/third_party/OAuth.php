@@ -377,40 +377,43 @@ Class OAuthRequest
         // into an array so we can add the duplicates
         $this->parameters[$name] = array($this->parameters[$name]);
       }
-    
       $this->parameters[$name][] = $value;
     } else {
       $this->parameters[$name] = $value;
     }
     }
     
-    public function get_parameter($name) {
-    return isset($this->parameters[$name]) ? $this->parameters[$name] : null;
+    public function getParameter($name) 
+    {
+        return isset($this->parameters[$name]) ? $this->parameters[$name] : null;
     }
     
-    public function get_parameters() {
-    return $this->parameters;
+    public function getParameters() 
+    {
+        return $this->parameters;
     }
     
-    public function unset_parameter($name) {
-    unset($this->parameters[$name]);
+    public function unsetParameters($name) 
+    {
+        unset($this->parameters[$name]);
     }
     
     /**
     * The request parameters, sorted and concatenated into a normalized string.
     * @return string
     */
-    public function get_signable_parameters() {
-    // Grab all parameters
-    $params = $this->parameters;
-    
-    // Remove oauth_signature if present
-    // Ref: Spec: 9.1.1 ("The oauth_signature parameter MUST be excluded.")
-    if (isset($params['oauth_signature'])) {
-      unset($params['oauth_signature']);
-    }
-    
-    return OAuthUtil::build_http_query($params);
+    public function getSignableParameters() 
+    {
+        // Grab all parameters
+        $params = $this->parameters;
+        
+        // Remove oauth_signature if present
+        // Ref: Spec: 9.1.1 ("The oauth_signature parameter MUST be excluded.")
+        if (isset($params['oauth_signature'])) {
+          unset($params['oauth_signature']);
+        }
+        
+        return OAuthUtil::buildHttpQuery(($params);
     }
     
     /**
@@ -425,7 +428,7 @@ Class OAuthRequest
         $parts = [
             $this->get_normalized_http_method(),
             $this->get_normalized_http_url(),
-            $this->get_signable_parameters(),
+            $this->getSignableParameters(),
         ];
     
         $parts = OAuthUtil::urlEncodeRFC3986($parts);
@@ -477,7 +480,7 @@ Class OAuthRequest
     * builds the data one would send in a POST request
     */
     public function to_postdata() {
-    return OAuthUtil::build_http_query($this->parameters);
+    return OAuthUtil::buildHttpQuery(($this->parameters);
     }
     
     /**
@@ -578,7 +581,7 @@ Class OAuthRequest
     $this->checkSignature($request, $consumer, $token);
     
     // Rev A change
-    $callback = $request->get_parameter('oauth_callback');
+    $callback = $request->getParameter('oauth_callback');
     $new_token = $this->data_store->new_request_token($consumer, $callback);
     
     return $new_token;
@@ -599,7 +602,7 @@ Class OAuthRequest
     $this->checkSignature($request, $consumer, $token);
     
     // Rev A change
-    $verifier = $request->get_parameter('oauth_verifier');
+    $verifier = $request->getParameter('oauth_verifier');
     $new_token = $this->data_store->new_access_token($token, $consumer, $verifier);
     
     return $new_token;
@@ -621,7 +624,7 @@ Class OAuthRequest
     * version 1
     */
     private function get_version(&$request) {
-    $version = $request->get_parameter("oauth_version");
+    $version = $request->getParameter("oauth_version");
     if (!$version) {
       // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. 
       // Chapter 7.0 ("Accessing Protected Ressources")
@@ -638,7 +641,7 @@ Class OAuthRequest
     */
     private function get_signature_method(&$request) {
     $signature_method =
-        @$request->get_parameter("oauth_signature_method");
+        @$request->getParameter("oauth_signature_method");
     
     if (!$signature_method) {
       // According to chapter 7 ("Accessing Protected Ressources") the signature-method
@@ -661,7 +664,7 @@ Class OAuthRequest
     * try to find the consumer for the provided request's consumer key
     */
     private function get_consumer(&$request) {
-    $consumer_key = @$request->get_parameter("oauth_consumer_key");
+    $consumer_key = @$request->getParameter("oauth_consumer_key");
     if (!$consumer_key) {
       throw new OAuthException("Invalid consumer key");
     }
@@ -678,7 +681,7 @@ Class OAuthRequest
     * try to find the token for the provided request's token key
     */
     private function get_token(&$request, $consumer, $token_type="access") {
-    $token_field = @$request->get_parameter('oauth_token');
+    $token_field = @$request->getParameter('oauth_token');
     $token = $this->data_store->lookup_token(
       $consumer, $token_type, $token_field
     );
@@ -694,15 +697,15 @@ Class OAuthRequest
     */
     private function checkSignature(&$request, $consumer, $token) {
     // this should probably be in a different method
-    $timestamp = @$request->get_parameter('oauth_timestamp');
-    $nonce = @$request->get_parameter('oauth_nonce');
+    $timestamp = @$request->getParameter('oauth_timestamp');
+    $nonce = @$request->getParameter('oauth_nonce');
     
     $this->check_timestamp($timestamp);
     $this->check_nonce($consumer, $token, $nonce, $timestamp);
     
     $signature_method = $this->get_signature_method($request);
     
-    $signature = $request->get_parameter('oauth_signature');
+    $signature = $request->getParameter('oauth_signature');
     $valid_sig = $signature_method->checkSignature(
       $request,
       $consumer,
@@ -902,7 +905,7 @@ class OAuthUtil {
     return $parsed_parameters;
   }
 
-  public static function build_http_query($params) {
+  public static function buildHttpQuery(($params) {
     if (!$params) return '';
 
     // Urlencode both keys and values

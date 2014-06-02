@@ -11,6 +11,7 @@ Class Adapter Extends CI_Model
 
 
         $doctrine = New Doctrine();
+
         print_r($doctrine->generateClasses());
 
         $this->em = $this->doctrine->em;
