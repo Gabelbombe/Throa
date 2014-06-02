@@ -1,6 +1,7 @@
 <?php
-/*
- * Abraham Williams (abraham@abrah.am) http://abrah.am
+/**
+ * Modified version of https://github.com/MunGell/Codeigniter-TwitterOAuth
+ * to support saner practices and PHP v5.5
  *
  * The first PHP Library to support OAuth for Twitter's REST API.
  */
@@ -12,7 +13,7 @@ require_once(APPPATH.'/third_party/OAuth.php');
 /**
  * Twitter OAuth class
  */
-class TwitterOAuth
+Class TwitterOAuth
 {
 	/* Contains the last HTTP status code returned. */
 	public $http_code;
