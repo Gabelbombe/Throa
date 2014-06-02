@@ -1,12 +1,12 @@
 <?php
 
-Class AdapterModel
+Class AdapterModel Extends CI_Model
 {
     public function __construct()
     {
-        $this->load->library('database');
+        parent::__construct();
 
-//        print_r($this->db->query('SELECT * FROM fls_approved'));
+        print_r($this->db->query('SELECT * FROM fls_approved'));
         die('adapting');
     }
 
