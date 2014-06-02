@@ -25,22 +25,24 @@ SET SQL_MODE=@OLD_SQL_MODE ;
 DROP TABLE IF EXISTS `fls_queue`;
 CREATE TABLE `fls_queue` (
   `id`      bigint(20)        NOT NULL AUTO_INCREMENT,
-  `uid`     varchar(127)      DEFAULT NULL              COMMENT 'User ID from location',
-  `aid`     varchar(255)      DEFAULT NULL              COMMENT 'Asset identifier from location',
+  `uid`     varchar(100)      DEFAULT NULL              COMMENT 'User ID from location',
+  `aid`     varchar(100)      DEFAULT NULL              COMMENT 'Asset identifier from location',
   `loc`     ENUM('in', 'tw')  DEFAULT 'in'              COMMENT 'Incoming location, in=instagram, tw=twitter',
   `grant`   tinyint(1)        NOT NULL DEFAULT FALSE    COMMENT 'Was perms granted bool 0/1',
-  `stamp`   datetime NOT NULL DEFAULT CURRENT_DATETIME,
+  `created` datetime NOT NULL DEFAULT CURRENT_DATETIME,
+  `updated` datetime NOT NULL DEFAULT CURRENT_DATETIME ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=`InnoDB` DEFAULT CHARSET=`utf8`;
 
 DROP TABLE IF EXISTS `fls_approved`;
 CREATE TABLE `fls_approved` (
   `id`      bigint(20)        NOT NULL AUTO_INCREMENT,
-  `uid`     varchar(127)      DEFAULT NULL              COMMENT 'User ID from location',
-  `aid`     varchar(255)      DEFAULT NULL              COMMENT 'Asset identifier from location',
+  `uid`     varchar(100)      DEFAULT NULL              COMMENT 'User ID from location',
+  `aid`     varchar(100)      DEFAULT NULL              COMMENT 'Asset identifier from location',
   `loc`     ENUM('in', 'tw')  DEFAULT 'in'              COMMENT 'Incoming location, in=instagram, tw=twitter',
   `grant`   tinyint(1)        NOT NULL DEFAULT FALSE    COMMENT 'Was perms granted bool 0/1',
-  `stamp`   datetime NOT NULL DEFAULT CURRENT_DATETIME,
+  `created` datetime NOT NULL DEFAULT CURRENT_DATETIME,
+  `updated` datetime NOT NULL DEFAULT CURRENT_DATETIME ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=`InnoDB` DEFAULT CHARSET=`utf8`;
 
