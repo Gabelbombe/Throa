@@ -48,21 +48,25 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = getenv('DBHOST');
-$db['default']['username'] = 'root';
-$db['default']['password'] = 'm1+n3{$S*?.3/(-aK(MJg$~ld_.".G9E';
-$db['default']['database'] = getenv('DBNAME');
-$db['default']['dbdriver'] = 'mysql';
-$db['default']['dbprefix'] = '';
-$db['default']['pconnect'] = TRUE;
-$db['default']['db_debug'] = TRUE;
-$db['default']['cache_on'] = FALSE;
-$db['default']['cachedir'] = '';
-$db['default']['char_set'] = 'utf8';
-$db['default']['dbcollat'] = 'utf8_general_ci';
-$db['default']['swap_pre'] = '';
-$db['default']['autoinit'] = TRUE;
-$db['default']['stricton'] = FALSE;
+$db = [
+    'default' => [
+        'hostname' => getenv('DBHOST'),
+        'username' => getenv('DBUSER'),
+		'password' => getenv('DBPASS'),
+		'database' => getenv('DBNAME'),
+		'dbdriver' => 'mysql',
+		'dbprefix' => '',
+		'pconnect' => TRUE,
+		'db_debug' => TRUE,
+		'cache_on' => FALSE,
+		'cachedir' => '',
+		'char_set' => 'utf8',
+		'dbcollat' => 'utf8_general_ci',
+		'swap_pre' => '',
+		'autoinit' => TRUE,
+		'stricton' => FALSE,
+	],
+];
 
 /* End of file database.php */
 /* Location: ./application/config/database.php */

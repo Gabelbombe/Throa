@@ -6,7 +6,7 @@ Class AdapterModel Extends CI_Model
     {
         parent::__construct();
 
-        print_r($this->db->query('SELECT * FROM fls_approved'));
+       print_r($this->db->query('SELECT * FROM fls_approved'));
         die('adapting');
     }
 
