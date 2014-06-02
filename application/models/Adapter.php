@@ -2,11 +2,14 @@
 
 Class Adapter Extends CI_Model
 {
-    private $logger = [];
+    private $logger = [],
+            $em     = false;
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->em = $this->doctrine->em;
     }
 
     public static function configs()
@@ -23,7 +26,7 @@ Class Adapter Extends CI_Model
     {
         $self = New Self();
 
-        $self->set('filter', $filter)
+        $self->set('filter', [ $filter ])
              ->bulkQueue();
     }
 
@@ -31,10 +34,8 @@ Class Adapter Extends CI_Model
     {
         $this->load->model('Queue');
 
-        $em = $this->doctrine->em;
-
         $batchSize = 20;
-        for ($i = 1; $i <= 10000; ++$i)
+        for ($i = 0; $i <= count($this->logger['filter']); ++$i)
         {
             $queue = New Queue();
 
@@ -43,11 +44,12 @@ Class Adapter Extends CI_Model
                   ->setAID($this->logger['filter'][$i]['aid'])
                   ->setLOC($this->logger['filter'][$i]['loc']);
 
-            $em->persist($queue);
+            $this->em->persists($queue);
+
             if (0 === ($i % $batchSize))
             {
-                $em->flush(); // Executes all updates.
-                $em->clear(); // Detaches all objects from Doctrine!
+                $this->em->flush(); // Executes all updates.
+                $this->em->clear(); // Detaches all objects from Doctrine!
             }
         }
     }

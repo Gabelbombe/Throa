@@ -291,7 +291,7 @@ Class OAuthRequest
      */
     public function __construct($httpMethod, $httpUrl, array $parameters = [])
     {
-        $parameters = array_merge( OAuthUtil::parse_parameters(parse_url($httpUrl, PHP_URL_QUERY)), $parameters);
+        $parameters = array_merge( OAuthUtil::parseParameters(parse_url($httpUrl, PHP_URL_QUERY)), $parameters);
         $this->parameters = $parameters;
         $this->httpMethod = $httpMethod;
         $this->httpUrl = $httpUrl;
@@ -299,9 +299,13 @@ Class OAuthRequest
     
     
     /**
-    * Attempt to build up a request from what was passed to the server
-    */
-
+     * Attempt to build up a request from what was passed to the server
+     * 
+     * @param null $httpMethod
+     * @param null $httpUrl
+     * @param null $parameters
+     * @return OAuthRequest
+     */
     public static function from_request($httpMethod = null, $httpUrl = null, $parameters = null)
     {
         $scheme = (! isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on")
@@ -320,37 +324,32 @@ Class OAuthRequest
         // this request.
         // If you run XML-RPC or similar you should use this to provide your own
         // parsed parameter-list
-        if (!$parameters) {
-          // Find request headers
-          $request_headers = OAuthUtil::get_headers();
+        if (! $parameters) 
+        {
+            // Find request headers
+            $requestHeaders = OAuthUtil::getHeaders();
+            
+            // Parse the query-string to find GET parameters
+            $parameters = OAuthUtil::parseParameters($_SERVER['QUERY_STRING']);
+            
+            // It's a POST request of the proper content-type, so parse POST
+            // parameters and add those overriding any duplicates from GET
+            if (isset($requestHeaders["Content-Type"]) && strstr($requestHeaders["Content-Type"], 'application/x-www-form-urlencoded')
+            && 'post' === strtolower($httpMethod))
 
-          // Parse the query-string to find GET parameters
-          $parameters = OAuthUtil::parse_parameters($_SERVER['QUERY_STRING']);
-
-          // It's a POST request of the proper content-type, so parse POST
-          // parameters and add those overriding any duplicates from GET
-          if ($httpMethod == "POST"
-              && @strstr($request_headers["Content-Type"],
-                         "application/x-www-form-urlencoded")
-              ) {
-            $post_data = OAuthUtil::parse_parameters(
-              file_get_contents(self::$POST_INPUT)
-            );
-            $parameters = array_merge($parameters, $post_data);
-          }
-
-          // We have a Authorization-header with OAuth data. Parse the header
-          // and add those overriding any duplicates from GET or POST
-          if (@substr($request_headers['Authorization'], 0, 6) == "OAuth ") {
-            $header_parameters = OAuthUtil::split_header(
-              $request_headers['Authorization']
-            );
-            $parameters = array_merge($parameters, $header_parameters);
-          }
+                $parameters = array_merge($parameters, OAuthUtil::parseParameters(file_get_contents(self::$POST_INPUT)));
+            
+            // We have a Authorization-header with OAuth data. Parse the header
+            // and add those overriding any duplicates from GET or POST
+            if (isset($requestHeaders['Authorization']) && substr($requestHeaders['Authorization'], 0, 6) == "OAuth ") 
+            {
+                $headerParameters = OAuthUtil::splitHeader($requestHeaders['Authorization']);
+                $parameters = array_merge($parameters, $headerParameters);
+            }
 
         }
 
-        return new OAuthRequest($httpMethod, $httpUrl, $parameters);
+        return New OAuthRequest($httpMethod, $httpUrl, $parameters);
     }
     
     /**
@@ -804,7 +803,7 @@ class OAuthUtil {
   // Utility function for turning the Authorization: header into
   // parameters, has to do some unescaping
   // Can filter out any non-oauth parameters if needed (default behaviour)
-  public static function split_header($header, $only_allow_oauth_parameters = true) {
+  public static function splitHeader($header, $only_allow_oauth_parameters = true) {
     $pattern = '/(([-_a-z]*)=("([^"]*)"|([^,]*)),?)/';
     $offset = 0;
     $params = array();
@@ -826,7 +825,7 @@ class OAuthUtil {
   }
 
   // helper to try to sort out headers for people who aren't running apache
-  public static function get_headers() {
+  public static function getHeaders() {
     if (function_exists('apache_request_headers')) {
       // we need this to get the actual Authorization: header
       // because apache tends to tell us it doesn't exist
@@ -874,7 +873,7 @@ class OAuthUtil {
   // This function takes a input like a=b&a=c&d=e and returns the parsed
   // parameters like this
   // array('a' => array('b','c'), 'd' => 'e')
-  public static function parse_parameters( $input ) {
+  public static function parseParameters( $input ) {
     if (!isset($input) || !$input) return array();
 
     $pairs = explode('&', $input);
