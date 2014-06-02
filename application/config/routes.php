@@ -39,7 +39,7 @@
 */
 
 $route = [
-    'default_controller'    => 'RunController',
+    'default_controller'    => 'Run',
     '404_override'          => '',
 ];
 

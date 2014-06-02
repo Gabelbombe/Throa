@@ -1,6 +1,6 @@
 <?php
 
-Class Hello Extends CI_Controller
+Class Cron Extends CI_Controller
 {
     public function __construct()
     {
