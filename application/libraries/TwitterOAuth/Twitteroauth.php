@@ -279,12 +279,18 @@ class TwitterOAuth
 		return $response;
 	}
 
-	/**
-	 * Get the header info to store.
-	 */
-	function getHeader($ch, $header) {
+    /**
+     * Get the header info to store.
+     *
+     * @param $header
+     * @return int
+     */
+    public function getHeader($header)
+    {
 		$i = strpos($header, ':');
-		if (!empty($i)) {
+
+        if (! empty($i))
+        {
 			$key = str_replace('-', '_', strtolower(substr($header, 0, $i)));
 			$value = trim(substr($header, $i + 2));
 			$this->http_header[$key] = $value;
