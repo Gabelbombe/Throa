@@ -45,6 +45,10 @@ CREATE TABLE `fls_approved` (
 ) ENGINE=`InnoDB` DEFAULT CHARSET=`utf8`;
 
 
+CREATE USER 'throa_dba'@'%' IDENTIFIED BY '@511m058q$=Fm6R';
+
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER
        ON throa.*
-       TO 'throa_dba'@'%' IDENTIFIED BY '1"__K,UR=}2&6eD';
+       TO 'throa_dba'@'%' IDENTIFIED BY '@511m058q$=Fm6R';
+
+FLUSH PRIVILEGES;
