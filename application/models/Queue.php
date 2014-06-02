@@ -8,27 +8,30 @@ Use Doctrine\ORM\Mapping AS ORM;
  */
 Class Queue
 {
+    const LOC_TWITTER   = 'tw';
+    const LOC_INSTAGRAM = 'in';
+
     /**
      * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="bigint")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     protected $id;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="varchar", length=100)
      */
     protected $uid;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="varchar", length=100)
      */
-    protected $author;
+    protected $aid;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="varchar", columnDefinition="ENUM('tw', 'in')")
      */
-    protected $blog;
+    protected $loc;
 
     /**
      * @ORM\Column(type="string", length=20)
@@ -51,4 +54,14 @@ Class Queue
      * @ORM\Column(type="datetime")
      */
     protected $updated;
+
+    public function setLOC($location)
+    {
+        if (! in_array(strtolower(substr($location, 0, 2)), [self::LOC_TWITTER, self::LOC_INSTAGRAM]))
+            Throw New \InvalidArgumentException("Invalid status");
+
+        $this->loc = strtolower(substr($location, 0, 2));
+
+        return $this;
+    }
 }
