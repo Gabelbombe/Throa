@@ -828,17 +828,17 @@ Class OAuthDataStore
 {
     public function lookupConsumer($consumerKey)
     {
-        return true; // implement me
+        return $consumerKey; // implement me
     }
     
     public function lookupToken($consumer, $tokenType, $token)
     {
-        return true; // implement me
+        return $token; // implement me
     }
     
     public function lookupNonce($consumer, $token, $nonce, $timestamp)
     {
-        return true; // implement me
+        return $nonce; // implement me
     }
     
     public function newRequestToken($consumer, $callback = null)
@@ -860,7 +860,7 @@ Class OAuthUtil
 {
     public static function urlEncodeRFC3986($input)
     {
-        if (is_array(input))    return array_map(array('OAuthUtil', 'urlEncodeRFC3986'), $input);
+        if (is_array($input))    return array_map(array('OAuthUtil', 'urlEncodeRFC3986'), $input);
         if (is_scalar($input))  return str_replace('+', ' ', str_replace('%7E', '~', rawurlencode($input)));
 
             return ''; // why return empty? makes no sense....
@@ -961,7 +961,7 @@ Class OAuthUtil
             
             if (isset($parsedParameters[$parameter])) 
             {
-                // We have already recieved parameter(s) with this name, so add to the list
+                // We have already received parameter(s) with this name, so add to the list
                 // of parameters with this name
             
                 if (is_scalar($parsedParameters[$parameter])) 
