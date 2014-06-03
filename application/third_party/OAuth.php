@@ -595,9 +595,12 @@ Class OAuthServer
     
     protected $dataStore;
     
-    function __construct($dataStore) 
+    public function __construct($dataStore)
     {
-        $this->dataStore = $dataStore;
+        // Guarantee we are a Data Storage instance
+        $this->dataStore = (! is_a($dataStore, 'OAuthDataStore'))
+            ? New OAuthDataStore()
+            : $dataStore;
     }
     
     public function addSignatureMethod($signatureMethod)
@@ -725,11 +728,16 @@ Class OAuthServer
      */
     private function getConsumer(&$request)
     {
-        $consumer_key = @$request->getParameter("oauth_consumer_key");
+        $consumerKey = (method_exists($request, 'getParameter'))
+            ? $request->getParameter("oauth_consumer_key")
+            : false;
 
-        if (! $consumer_key) Throw New OAuthException("Invalid consumer key");
+        if (! $consumerKey) Throw New OAuthException("Invalid consumer key");
 
-            $consumer = $this->dataStore->lookupConsumer($consumer_key);
+
+            $consumer = (method_exists($this->dataStore, 'lookupConsumer'))
+                ? $this->dataStore->lookupConsumer($consumerKey)
+                : false;
 
         if (! $consumer) Throw new OAuthException("Invalid consumer");
 
@@ -761,11 +769,11 @@ Class OAuthServer
     private function checkSignature(&$request, $consumer, $token) 
     {
         // this should probably be in a different method
-        $timestamp = (class_method($request, 'getParameter'))
+        $timestamp = (method_exists($request, 'getParameter'))
             ? $request->getParameter('oauth_timestamp')
-            : time(); // guesstimation?
+            : time(); // guess-timation?
  
-        $nonce = (class_method($request, 'getParameter'))
+        $nonce = (method_exists($request, 'getParameter'))
             ? $request->getParameter('oauth_nonce')
             : false;
         
@@ -774,9 +782,13 @@ Class OAuthServer
         
         $signatureMethod = $this->getSignatureMethod($request);
         
-        $signature = $request->getParameter('oauth_signature');
+        $signature = (method_exists($request, 'gertParameter'))
+            ? $request->getParameter('oauth_signature')
+            : false;
 
-        if (! $signatureMethod->checkSignature($request, $consumer, $token, $signature))
+        if (! method_exists($signatureMethod, 'checkSignature')
+        ||  ! $signatureMethod->checkSignature($request, $consumer, $token, $signature))
+
             Throw New OAuthException('Invalid signature');
     }
     
@@ -816,22 +828,22 @@ Class OAuthDataStore
 {
     public function lookupConsumer($consumerKey)
     {
-        // implement me
+        return true; // implement me
     }
     
     public function lookupToken($consumer, $tokenType, $token)
     {
-        // implement me
+        return true; // implement me
     }
     
     public function lookupNonce($consumer, $token, $nonce, $timestamp)
     {
-        // implement me
+        return true; // implement me
     }
     
     public function newRequestToken($consumer, $callback = null)
     {
-        // return a new token attached to this consumer
+        return true; // return a new token attached to this consumer
     }
     
     public function newAccessToken($token, $consumer, $verifier = null)
@@ -840,6 +852,7 @@ Class OAuthDataStore
         // for the user associated with this token if the request token
         // is authorized
         // should also invalidate the request token
+        return true;
     }
 }
 
@@ -854,142 +867,150 @@ Class OAuthUtil
     }
 
 
-  // This decode function isn't taking into consideration the above
-  // modifications to the encoding process. However, this method doesn't
-  // seem to be used anywhere so leaving it as is.
-  public static function urldecode_rfc3986($string) {
-    return urldecode($string);
-  }
-
-  // Utility function for turning the Authorization: header into
-  // parameters, has to do some unescaping
-  // Can filter out any non-oauth parameters if needed (default behaviour)
-  public static function splitHeader($header, $only_allow_oauth_parameters = true) {
-    $pattern = '/(([-_a-z]*)=("([^"]*)"|([^,]*)),?)/';
-    $offset = 0;
-    $params = array();
-    while (preg_match($pattern, $header, $matches, PREG_OFFSET_CAPTURE, $offset) > 0) {
-      $match = $matches[0];
-      $header_name = $matches[2][0];
-      $header_content = (isset($matches[5])) ? $matches[5][0] : $matches[4][0];
-      if (preg_match('/^oauth_/', $header_name) || !$only_allow_oauth_parameters) {
-        $params[$header_name] = OAuthUtil::urldecode_rfc3986($header_content);
-      }
-      $offset = $match[1] + strlen($match[0]);
+    // This decode function isn't taking into consideration the above
+    // modifications to the encoding process. However, this method doesn't
+    // seem to be used anywhere so leaving it as is.
+    public static function urlDecodeRFC3986($string) 
+    {
+        return urldecode($string);
     }
 
-    if (isset($params['realm'])) {
-      unset($params['realm']);
-    }
+    // Utility function for turning the Authorization: header into
+    // parameters, has to do some unescaping
+    // Can filter out any non-oauth parameters if needed (default behaviour)
+    public static function splitHeader($header, $onlyAllowOAuthParameters = true)
+    {
+        $offset = 0;
+        $params = [];
 
-    return $params;
-  }
+        while (preg_match('/(([-_a-z]*)=("([^"]*)"|([^,]*)),?)/', $header, $matches, PREG_OFFSET_CAPTURE, $offset) > 0)
+        {
+            $match = $matches[0];
+            $headerName = $matches[2][0];
+            $headerContent = (isset($matches[5])) ? $matches[5][0] : $matches[4][0];
 
-  // helper to try to sort out headers for people who aren't running apache
-  public static function getHeaders() {
-    if (function_exists('apache_request_headers')) {
-      // we need this to get the actual Authorization: header
-      // because apache tends to tell us it doesn't exist
-      $headers = apache_request_headers();
-
-      // sanitize the output of apache_request_headers because
-      // we always want the keys to be Cased-Like-This and arh()
-      // returns the headers in the same case as they are in the
-      // request
-      $out = array();
-      foreach( $headers AS $key => $value ) {
-        $key = str_replace(
-            " ",
-            "-",
-            ucwords(strtolower(str_replace("-", " ", $key)))
-          );
-        $out[$key] = $value;
-      }
-    } else {
-      // otherwise we don't have apache and are just going to have to hope
-      // that $_SERVER actually contains what we need
-      $out = array();
-      if( isset($_SERVER['CONTENT_TYPE']) )
-        $out['Content-Type'] = $_SERVER['CONTENT_TYPE'];
-      if( isset($_ENV['CONTENT_TYPE']) )
-        $out['Content-Type'] = $_ENV['CONTENT_TYPE'];
-
-      foreach ($_SERVER as $key => $value) {
-        if (substr($key, 0, 5) == "HTTP_") {
-          // this is chaos, basically it is just there to capitalize the first
-          // letter of every word that is not an initial HTTP and strip HTTP
-          // code from przemek
-          $key = str_replace(
-            " ",
-            "-",
-            ucwords(strtolower(str_replace("_", " ", substr($key, 5))))
-          );
-          $out[$key] = $value;
-        }
-      }
-    }
-    return $out;
-  }
-
-  // This function takes a input like a=b&a=c&d=e and returns the parsed
-  // parameters like this
-  // array('a' => array('b','c'), 'd' => 'e')
-  public static function parseParameters( $input ) {
-    if (!isset($input) || !$input) return array();
-
-    $pairs = explode('&', $input);
-
-    $parsed_parameters = array();
-    foreach ($pairs as $pair) {
-      $split = explode('=', $pair, 2);
-      $parameter = OAuthUtil::urldecode_rfc3986($split[0]);
-      $value = isset($split[1]) ? OAuthUtil::urldecode_rfc3986($split[1]) : '';
-
-      if (isset($parsed_parameters[$parameter])) {
-        // We have already recieved parameter(s) with this name, so add to the list
-        // of parameters with this name
-
-        if (is_scalar($parsed_parameters[$parameter])) {
-          // This is the first duplicate, so transform scalar (string) into an array
-          // so we can add the duplicates
-          $parsed_parameters[$parameter] = array($parsed_parameters[$parameter]);
+            if (preg_match('/^oauth_/', $headerName) || ! $onlyAllowOAuthParameters)
+                $params[$headerName] = OAuthUtil::urlDecodeRFC3986($headerContent);
+ 
+          $offset = $match[1] + strlen($match[0]);
         }
 
-        $parsed_parameters[$parameter][] = $value;
-      } else {
-        $parsed_parameters[$parameter] = $value;
-      }
+        if (isset($params['realm']))
+            unset($params['realm']);
+
+        return $params;
     }
-    return $parsed_parameters;
-  }
 
-  public static function buildHttpQuery($params) {
-    if (!$params) return '';
+    // helper to try to sort out headers for people who aren't running apache
+    public static function getHeaders()
+    {
+        if (function_exists('apache_request_headers'))
+        {
+          // we need this to get the actual Authorization: header
+          // because apache tends to tell us it doesn't exist
+          $headers = apache_request_headers();
 
-    // Urlencode both keys and values
-    $keys = OAuthUtil::urlEncodeRFC3986(array_keys($params));
-    $values = OAuthUtil::urlEncodeRFC3986(array_values($params));
-    $params = array_combine($keys, $values);
+          // sanitize the output of apache_request_headers because
+          // we always want the keys to be Cased-Like-This and arh()
+          // returns the headers in the same case as they are in the
+          // request
+          $out = [];
 
-    // Parameters are sorted by name, using lexicographical byte value ordering.
-    // Ref: Spec: 9.1.1 (1)
-    uksort($params, 'strcmp');
+          foreach( $headers AS $key => $value )
+            $out[str_replace(' ', '-', ucwords(strtolower(str_replace("-", " ", $key))))] = $value;
 
-    $pairs = array();
-    foreach ($params as $parameter => $value) {
-      if (is_array($value)) {
-        // If two or more parameters share the same name, they are sorted by their value
+        } else {
+            // otherwise we don't have apache and are just going to have to hope
+            // that $_SERVER actually contains what we need
+            $out = [];
+            if( isset($_SERVER['CONTENT_TYPE']) )
+                $out['Content-Type'] = $_SERVER['CONTENT_TYPE'];
+
+            if( isset($_ENV['CONTENT_TYPE']) )
+                $out['Content-Type'] = $_ENV['CONTENT_TYPE'];
+
+            foreach ($_SERVER as $key => $value)
+            {
+                if (substr($key, 0, 5) == "HTTP_")
+                {
+                  // this is chaos, basically it is just there to capitalize the first
+                  // letter of every word that is not an initial HTTP and strip HTTP
+                  // code from przemek
+                  $out[str_replace(' ', '-', ucwords(strtolower(str_replace("_", " ", substr($key, 5)))))] = $value;
+                }
+            }
+        }
+        return $out;
+    }
+
+    // This function takes a input like a=b&a=c&d=e and returns the parsed
+    // parameters like this
+    // array('a' => array('b','c'), 'd' => 'e')
+    public static function parseParameters( $input ) 
+    {
+        if (! isset($input) || !$input) return [];
+    
+        $pairs = explode('&', $input);
+        
+        $parsedParameters = [];
+        foreach ($pairs AS $pair) 
+        {
+            $split = explode('=', $pair, 2);
+            $parameter = OAuthUtil::urlDecodeRFC3986($split[0]);
+            $value = isset($split[1]) ? OAuthUtil::urlDecodeRFC3986($split[1]) : '';
+            
+            if (isset($parsedParameters[$parameter])) 
+            {
+                // We have already recieved parameter(s) with this name, so add to the list
+                // of parameters with this name
+            
+                if (is_scalar($parsedParameters[$parameter])) 
+                {
+                    // This is the first duplicate, so transform scalar (string) into an array
+                    // so we can add the duplicates
+                    $parsedParameters[$parameter] = [ $parsedParameters[$parameter] ];
+                }
+            
+                $parsedParameters[$parameter][] = $value;
+            } else {
+                $parsedParameters[$parameter] = $value;
+            }
+        }
+        return $parsedParameters;
+    }
+
+    public static function buildHttpQuery($params) 
+    {
+        if (!$params) return '';
+        
+        // Urlencode both keys and values
+        $keys = OAuthUtil::urlEncodeRFC3986(array_keys($params));
+        $values = OAuthUtil::urlEncodeRFC3986(array_values($params));
+        $params = array_combine($keys, $values);
+        
+        // Parameters are sorted by name, using lexicographical byte value ordering.
         // Ref: Spec: 9.1.1 (1)
-        natsort($value);
-        foreach ($value as $duplicate_value) {
-          $pairs[] = $parameter . '=' . $duplicate_value;
+        uksort($params, 'strcmp');
+        
+        $pairs = [];
+        foreach ($params as $parameter => $value) 
+        {
+            if (is_array($value)) 
+            {
+                // If two or more parameters share the same name, they are sorted by their value
+                // Ref: Spec: 9.1.1 (1)
+                natsort($value);
+
+                foreach ($value as $duplicateValues)
+                    $pairs[] = "{$parameter}={$duplicateValues}";
+
+            } else {
+                $pairs[] = "{$parameter}={$value}";
+            }
         }
-      } else {
-        $pairs[] = $parameter . '=' . $value;
-      }
+
+        // For each parameter, the name is separated from the corresponding value by an '=' character (ASCII code 61)
+        // Each name-value pair is separated by an '&' character (ASCII code 38)
+        return implode('&', $pairs);
     }
-    // For each parameter, the name is separated from the corresponding value by an '=' character (ASCII code 61)
-    // Each name-value pair is separated by an '&' character (ASCII code 38)
-    return implode('&', $pairs);
-  }
 }
