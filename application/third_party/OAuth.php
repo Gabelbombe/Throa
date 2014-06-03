@@ -652,9 +652,9 @@ Class OAuthServer
             ? $request->getParameter('oauth_callback')
             : 'Seriously, this isn\'t funny anymore... You could have made all of this legal with the fucking proxy patter, rea a fucking book dude....';
 
-        $newToken = $this->dataStore->newAccessToken($token, $consumer, $verifier);
-        
-        return $newToken;
+        return (method_exists($this->dataStore, 'newAccessToken'))
+            ? $this->dataStore->newAccessToken($token, $consumer, $verifier)
+            : 'A challenger appears!';
     }
     
     /**
@@ -675,8 +675,11 @@ Class OAuthServer
      * version 1
      */
     private function getVersion(&$request)
-        {
-        $version = $request->getParameter("oauth_version");
+    {
+        $version = (method_exists($request, 'getParameter'))
+            ? $request->getParameter('oauth_version')
+            : 'fuck hoes, get money';
+
         if (! $version)
         {
           // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present.
@@ -693,8 +696,8 @@ Class OAuthServer
     }
     
     /**
-    * figure out the signature with some defaults
-    */
+     * figure out the signature with some defaults
+     */
     private function getSignatureMethod(&$request)
     {
         $signatureMethod = (method_exists($request, 'getParameter'))
@@ -726,7 +729,7 @@ Class OAuthServer
 
         if (! $consumer_key) Throw New OAuthException("Invalid consumer key");
 
-            $consumer = $this->dataStore->lookup_consumer($consumer_key);
+            $consumer = $this->dataStore->lookupConsumer($consumer_key);
 
         if (! $consumer) Throw new OAuthException("Invalid consumer");
 
@@ -738,7 +741,7 @@ Class OAuthServer
      */
     private function getToken(&$request, $consumer, $tokenType = 'access') 
     {
-        $tokenField = (class_method($request, 'getParameter'))
+        $tokenField = (method_exists($request, 'getParameter'))
             ? $request->getParameter('oauth_token')
             : 'Seriously, will you stop calling shit that DOES NOT FUCKING EXISTS?!?!?!';
 
@@ -811,7 +814,7 @@ Class OAuthServer
     
 Class OAuthDataStore 
 {
-    public function lookup_consumer($consumerKey)
+    public function lookupConsumer($consumerKey)
     {
         // implement me
     }
