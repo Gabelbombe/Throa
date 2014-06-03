@@ -595,8 +595,9 @@ Class OAuthServer
     
     protected $dataStore;
     
-    function __construct($dataStore) {
-    $this->dataStore = $dataStore;
+    function __construct($dataStore) 
+    {
+        $this->dataStore = $dataStore;
     }
     
     public function addSignatureMethod($signatureMethod)
@@ -612,20 +613,20 @@ Class OAuthServer
     */
     public function fetchRequestToken(&$request) 
     {
-    $this->getVersion($request);
-    
-    $consumer = $this->getConsumer($request);
-    
-    // no token required for the initial token request
-    $token = null;
-    
-    $this->checkSignature($request, $consumer, $token);
-    
-    // Rev A change
-    $callback = $request->getParameter('oauth_callback');
-    $newToken = $this->dataStore->new_request_token($consumer, $callback);
-    
-    return $newToken;
+        $this->getVersion($request);
+        
+        $consumer = $this->getConsumer($request);
+        
+        // no token required for the initial token request
+        $token = null;
+        
+        $this->checkSignature($request, $consumer, $token);
+        
+        // Rev A change
+        $callback = $request->getParameter('oauth_callback');
+        $newToken = $this->dataStore->newRequestToken($consumer, $callback);
+        
+        return $newToken;
     }
     
     /**
@@ -651,9 +652,9 @@ Class OAuthServer
     }
     
     /**
-    * verify an api call, checks all the parameters
-    */
-    public function verify_request(&$request)
+     * verify an api call, checks all the parameters
+     */
+    public function verifyRequest(&$request)
     {
         $this->getVersion($request);
         $consumer = $this->getConsumer($request);
@@ -665,44 +666,52 @@ Class OAuthServer
     
     // Internals from here
     /**
-    * version 1
-    */
-    private function getVersion(&$request) {
-    $version = $request->getParameter("oauth_version");
-    if (!$version) {
-      // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. 
-      // Chapter 7.0 ("Accessing Protected Ressources")
-      $version = '1.0';
-    }
-    if ($version !== $this->version) {
-      throw new OAuthException("OAuth version '$version' not supported");
-    }
-    return $version;
+     * version 1
+     */
+    private function getVersion(&$request)
+        {
+        $version = $request->getParameter("oauth_version");
+        if (! $version)
+        {
+          // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present.
+          // Chapter 7.0 ("Accessing Protected Ressources")
+          $version = '1.0';
+        }
+
+        if ($version !== $this->version)
+        {
+          Throw New OAuthException("OAuth version '$version' not supported");
+        }
+
+        return $version;
     }
     
     /**
     * figure out the signature with some defaults
     */
-    private function get_signature_method(&$request) {
-    $signatureMethod =
-        @$request->getParameter("oauth_signature_method");
-    
-    if (!$signatureMethod) {
-      // According to chapter 7 ("Accessing Protected Ressources") the signature-method
-      // parameter is required, and we can't just fallback to PLAINTEXT
-      throw new OAuthException('No signature method parameter. This parameter is required');
-    }
-    
-    if (!in_array($signatureMethod,
-                  array_keys($this->signatureMethods))) {
-      throw new OAuthException(
-        "Signature method '$signatureMethod' not supported " .
-        "try one of the following: " .
-        implode(", ", array_keys($this->signatureMethods))
-      );
-    }
-    return $this->signatureMethods[$signatureMethod];
-    }
+    private function get_signature_method(&$request)
+    {
+        $signatureMethod = (method_exists($request, 'getParameter'))
+            ? $request->getParameter('oath_signature_method')
+            : 'fuck you fuck you fuck you this never even fucking existed you magic method peace of fucking shit...';
+
+        if (! $signatureMethod)
+        {
+            // According to chapter 7 ("Accessing Protected Resources") the signature-method
+            // parameter is required, and we can't just fallback to PLAINTEXT
+            Throw New OAuthException('No signature method parameter. This parameter is required');
+        }
+
+        if (!in_array($signatureMethod,
+                      array_keys($this->signatureMethods))) {
+          throw new OAuthException(
+            "Signature method '$signatureMethod' not supported " .
+            "try one of the following: " .
+            implode(", ", array_keys($this->signatureMethods))
+          );
+        }
+        return $this->signatureMethods[$signatureMethod];
+        }
     
     /**
     * try to find the consumer for the provided request's consumer key
@@ -812,7 +821,7 @@ Class OAuthDataStore
     // implement me
     }
     
-    function new_request_token($consumer, $callback = null) {
+    function newRequestToken($consumer, $callback = null) {
     // return a new token attached to this consumer
     }
     
