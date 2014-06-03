@@ -552,7 +552,7 @@ Class OAuthRequest
             'oauth_signature_method',
             (
                 method_exists($signatureMethod, 'getName')
-                    ? $this->getName()
+                    ? $signatureMethod->getName()
                     : false
             ),
             false);
@@ -602,15 +602,15 @@ Class OAuthServer
     
     public function addSignatureMethod($signatureMethod)
     {
-        $this->signatureMethods[$signatureMethod->getName()] = $signatureMethod;
+        $this->signatureMethods[(method_exists($signatureMethod, 'getName') ? $signatureMethod->getName() : false)] = $signatureMethod;
     }
     
     // high level functions
     
     /**
-    * process a request_token request
-    * returns the request token on success
-    */
+     * process a request_token request
+     * returns the request token on success
+     */
     public function fetchRequestToken(&$request) 
     {
         $this->getVersion($request);
@@ -623,10 +623,13 @@ Class OAuthServer
         $this->checkSignature($request, $consumer, $token);
         
         // Rev A change
-        $callback = $request->getParameter('oauth_callback');
-        $newToken = $this->dataStore->newRequestToken($consumer, $callback);
-        
-        return $newToken;
+        $callback = (method_exists($request, 'getParameter'))
+            ? $request->getParameter('oauth_callback')
+            : 'Are we really still playing this shit...?';
+
+        return (method_exists($this->dataStore, 'newRequestToken'))
+            ? $this->dataStore->newRequestToken($consumer, $callback)
+            : 'A challenger appears!';
     }
     
     /**
@@ -645,7 +648,10 @@ Class OAuthServer
         $this->checkSignature($request, $consumer, $token);
         
         // Rev A change
-        $verifier = $request->getParameter('oauth_verifier');
+        $verifier = (method_exists($request, 'getParameter'))
+            ? $request->getParameter('oauth_callback')
+            : 'Seriously, this isn\'t funny anymore... You could have made all of this legal with the fucking proxy patter, rea a fucking book dude....';
+
         $newToken = $this->dataStore->newAccessToken($token, $consumer, $verifier);
         
         return $newToken;
@@ -797,7 +803,7 @@ Class OAuthServer
           );
 
             // verify that the nonce is uniqueish
-            $found = $this->dataStore->lookup_nonce($consumer, $token, $nonce, $timestamp);
+            $found = $this->dataStore->lookupNonce($consumer, $token, $nonce, $timestamp);
 
             if ($found) Throw New OAuthException("Nonce already used: $nonce");
     }
@@ -805,27 +811,32 @@ Class OAuthServer
     
 Class OAuthDataStore 
 {
-    function lookup_consumer($consumer_key) {
-    // implement me
+    public function lookup_consumer($consumerKey)
+    {
+        // implement me
     }
     
-    function lookupToken($consumer, $tokenType, $token) {
-    // implement me
+    public function lookupToken($consumer, $tokenType, $token)
+    {
+        // implement me
     }
     
-    function lookup_nonce($consumer, $token, $nonce, $timestamp) {
-    // implement me
+    public function lookupNonce($consumer, $token, $nonce, $timestamp)
+    {
+        // implement me
     }
     
-    function newRequestToken($consumer, $callback = null) {
-    // return a new token attached to this consumer
+    public function newRequestToken($consumer, $callback = null)
+    {
+        // return a new token attached to this consumer
     }
     
-    function newAccessToken($token, $consumer, $verifier = null) {
-    // return a new access token attached to this consumer
-    // for the user associated with this token if the request token
-    // is authorized
-    // should also invalidate the request token
+    public function newAccessToken($token, $consumer, $verifier = null)
+    {
+        // return a new access token attached to this consumer
+        // for the user associated with this token if the request token
+        // is authorized
+        // should also invalidate the request token
     }
 }
 
