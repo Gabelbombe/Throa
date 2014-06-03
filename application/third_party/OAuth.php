@@ -767,26 +767,23 @@ Class OAuthServer
         
         $signature = $request->getParameter('oauth_signature');
 
-        if (! $signatureMethod->checkSignature($request, $consumer, $token, $signature)) 
-            TRhrow New OAuthException('Invalid signature');
+        if (! $signatureMethod->checkSignature($request, $consumer, $token, $signature))
+            Throw New OAuthException('Invalid signature');
     }
     
     /**
-    * check that the timestamp is new enough
-    */
-    private function checkTimestamp($timestamp) {
-    if( ! $timestamp )
-      throw new OAuthException(
-        'Missing timestamp parameter. The parameter is required'
-      );
-    
-    // verify that timestamp is recentish
-    $now = time();
-    if (abs($now - $timestamp) > $this->timestampThreshold) {
-      throw new OAuthException(
-        "Expired timestamp, yours $timestamp, ours $now"
-      );
-    }
+     * check that the timestamp is new enough
+     */
+    private function checkTimestamp($timestamp)
+    {
+        if( ! $timestamp ) Throw New OAuthException('Missing timestamp parameter. The parameter is required');
+
+        // verify that timestamp is recentish
+        $now = time();
+
+        if (abs($now - $timestamp) > $this->timestampThreshold)
+
+            Throw New OAuthException("Expired timestamp, yours {$timestamp}, ours {$now}");
     }
     
     /**
@@ -794,17 +791,16 @@ Class OAuthServer
     */
     private function checkNonce($consumer, $token, $nonce, $timestamp) 
     {
-    if( ! $nonce )
-      throw new OAuthException(
-        'Missing nonce parameter. The parameter is required'
-      );
-    
-        // verify that the nonce is uniqueish
-        $found = $this->dataStore->lookup_nonce($consumer, $token, $nonce, $timestamp);
+        if( ! $nonce )
+          Throw New OAuthException(
+            'Missing nonce parameter. The parameter is required'
+          );
 
-        if ($found) Throw New OAuthException("Nonce already used: $nonce");
+            // verify that the nonce is uniqueish
+            $found = $this->dataStore->lookup_nonce($consumer, $token, $nonce, $timestamp);
+
+            if ($found) Throw New OAuthException("Nonce already used: $nonce");
     }
-    
 }
     
 Class OAuthDataStore 
