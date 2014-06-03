@@ -481,13 +481,6 @@ Class OAuthRequest
     */
     public function toUrl() 
     {
-        if (version_compare(phpversion(), '5.5.1', '<'))
-        {
-            return (! empty($this->toPostData()))
-                ? "{$this->toPostData()}?{$this->getNormalizedHttpUrl()}"
-                : $this->getNormalizedHttpUrl();
-        }
-
         $data = $this->toPostData(); // min versions hate the above =P
 
         return (! empty($data))
