@@ -307,7 +307,7 @@ Class OAuthRequest
     * @param null $parameters
     * @return OAuthRequest
     */
-    public static function from_request($httpMethod = null, $httpUrl = null, $parameters = null)
+    public static function fromRequest($httpMethod = null, $httpUrl = null, $parameters = null)
     {
         $scheme = (! isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on")
             ? 'http'
@@ -354,34 +354,44 @@ Class OAuthRequest
     }
     
     /**
-    * pretty much a helper function to set up the request
-    */
-    public static function from_consumer_and_token($consumer, $token, $httpMethod, $httpUrl, $parameters=NULL) {
-    @$parameters or $parameters = array();
-    $defaults = array("oauth_version" => OAuthRequest::$version,
-                      "oauth_nonce" => OAuthRequest::generateNonce(),
-                      "oauth_timestamp" => OAuthRequest::generateTimestamp(),
-                      "oauth_consumer_key" => $consumer->key);
-    if ($token)
-      $defaults['oauth_token'] = $token->key;
+     * pretty much a helper function to set up the request
+     */
+    public static function fromConsumerAndToken($consumer, $token, $httpMethod, $httpUrl, $parameters = null)
+    {
+        $parameters = (isset($parameters) && ! empty($parameters))
+            ? $parameters
+            : [];
+
+        $defaults = [
+            "oauth_version"      => OAuthRequest::$version,
+            "oauth_nonce"        => OAuthRequest::generateNonce(),
+            "oauth_timestamp"    => OAuthRequest::generateTimestamp(),
+            "oauth_consumer_key" => $consumer->key
+        ];
     
-    $parameters = array_merge($defaults, $parameters);
-    
-    return new OAuthRequest($httpMethod, $httpUrl, $parameters);
+            if ($token) $defaults['oauth_token'] = $token->key;
+        
+        $parameters = array_merge($defaults, $parameters);
+        
+        return New OAuthRequest($httpMethod, $httpUrl, $parameters);
     }
     
-    public function setParameter($name, $value, $allow_duplicates = true) {
-    if ($allow_duplicates && isset($this->parameters[$name])) {
-      // We have already added parameter(s) with this name, so add to the list
-      if (is_scalar($this->parameters[$name])) {
-        // This is the first duplicate, so transform scalar (string)
-        // into an array so we can add the duplicates
-        $this->parameters[$name] = array($this->parameters[$name]);
-      }
-      $this->parameters[$name][] = $value;
-    } else {
-      $this->parameters[$name] = $value;
-    }
+    public function setParameter($name, $value, $allowDupes = true) 
+    {
+        if ($allowDupes && isset($this->parameters[$name]))
+        {
+          // We have already added parameter(s) with this name, so add to the list
+          if (is_scalar($this->parameters[$name]))
+          {
+            // This is the first duplicate, so transform scalar (string)
+            // into an array so we can add the duplicates
+            $this->parameters[$name] = array($this->parameters[$name]);
+          }
+
+          $this->parameters[$name][] = $value;
+        } else {
+          $this->parameters[$name] = $value;
+        }
     }
     
     public function getParameter($name) 
@@ -565,21 +575,22 @@ Class OAuthRequest
         return md5(microtime() . mt_rand()); // md5s look nicer than numbers
     }
 }
+
+Class OAuthServer 
+{
+    protected $timestampThreshold = 300;    // in seconds, five minutes
+    protected $version = '1.0';             // hi blaine <--- hahaha wtf?
+    protected $signatureMethods = [];
     
-    class OAuthServer {
-    protected $timestamp_threshold = 300; // in seconds, five minutes
-    protected $version = '1.0';             // hi blaine
-    protected $signatureMethods = array();
+    protected $dataStore;
     
-    protected $data_store;
-    
-    function __construct($data_store) {
-    $this->data_store = $data_store;
+    function __construct($dataStore) {
+    $this->dataStore = $dataStore;
     }
     
-    public function add_signature_method($signatureMethod) {
-    $this->signature_methods[$signatureMethod->getName()] =
-      $signatureMethod;
+    public function addSignatureMethod($signatureMethod)
+    {
+        $this->signatureMethods[$signatureMethod->getName()] = $signatureMethod;
     }
     
     // high level functions
@@ -588,60 +599,64 @@ Class OAuthRequest
     * process a request_token request
     * returns the request token on success
     */
-    public function fetch_request_token(&$request) {
-    $this->get_version($request);
+    public function fetchRequestToken(&$request) 
+    {
+    $this->getVersion($request);
     
-    $consumer = $this->get_consumer($request);
+    $consumer = $this->getConsumer($request);
     
     // no token required for the initial token request
-    $token = NULL;
+    $token = null;
     
     $this->checkSignature($request, $consumer, $token);
     
     // Rev A change
     $callback = $request->getParameter('oauth_callback');
-    $new_token = $this->data_store->new_request_token($consumer, $callback);
+    $newToken = $this->dataStore->new_request_token($consumer, $callback);
     
-    return $new_token;
+    return $newToken;
     }
     
     /**
-    * process an access_token request
-    * returns the access token on success
-    */
-    public function fetch_access_token(&$request) {
-    $this->get_version($request);
-    
-    $consumer = $this->get_consumer($request);
-    
-    // requires authorized request token
-    $token = $this->get_token($request, $consumer, "request");
-    
-    $this->checkSignature($request, $consumer, $token);
-    
-    // Rev A change
-    $verifier = $request->getParameter('oauth_verifier');
-    $new_token = $this->data_store->new_access_token($token, $consumer, $verifier);
-    
-    return $new_token;
+     * process an access_token request
+     * returns the access token on success
+     */
+    public function fetchAccessToken(&$request) 
+    {
+        $this->getVersion($request);
+        
+        $consumer = $this->getConsumer($request);
+        
+        // requires authorized request token
+        $token = $this->getToken($request, $consumer, "request");
+        
+        $this->checkSignature($request, $consumer, $token);
+        
+        // Rev A change
+        $verifier = $request->getParameter('oauth_verifier');
+        $newToken = $this->dataStore->newAccessToken($token, $consumer, $verifier);
+        
+        return $newToken;
     }
     
     /**
     * verify an api call, checks all the parameters
     */
-    public function verify_request(&$request) {
-    $this->get_version($request);
-    $consumer = $this->get_consumer($request);
-    $token = $this->get_token($request, $consumer, "access");
-    $this->checkSignature($request, $consumer, $token);
-    return array($consumer, $token);
+    public function verify_request(&$request)
+    {
+        $this->getVersion($request);
+        $consumer = $this->getConsumer($request);
+        $token = $this->getToken($request, $consumer, "access");
+        $this->checkSignature($request, $consumer, $token);
+
+        return [ $consumer, $token ];
     }
     
     // Internals from here
     /**
     * version 1
     */
-    private function get_version(&$request) {
+    private function getVersion(&$request) {
     $version = $request->getParameter("oauth_version");
     if (!$version) {
       // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. 
@@ -668,26 +683,26 @@ Class OAuthRequest
     }
     
     if (!in_array($signatureMethod,
-                  array_keys($this->signature_methods))) {
+                  array_keys($this->signatureMethods))) {
       throw new OAuthException(
         "Signature method '$signatureMethod' not supported " .
         "try one of the following: " .
-        implode(", ", array_keys($this->signature_methods))
+        implode(", ", array_keys($this->signatureMethods))
       );
     }
-    return $this->signature_methods[$signatureMethod];
+    return $this->signatureMethods[$signatureMethod];
     }
     
     /**
     * try to find the consumer for the provided request's consumer key
     */
-    private function get_consumer(&$request) {
+    private function getConsumer(&$request) {
     $consumer_key = @$request->getParameter("oauth_consumer_key");
     if (!$consumer_key) {
       throw new OAuthException("Invalid consumer key");
     }
     
-    $consumer = $this->data_store->lookup_consumer($consumer_key);
+    $consumer = $this->dataStore->lookup_consumer($consumer_key);
     if (!$consumer) {
       throw new OAuthException("Invalid consumer");
     }
@@ -698,9 +713,9 @@ Class OAuthRequest
     /**
     * try to find the token for the provided request's token key
     */
-    private function get_token(&$request, $consumer, $token_type="access") {
+    private function getToken(&$request, $consumer, $token_type="access") {
     $token_field = @$request->getParameter('oauth_token');
-    $token = $this->data_store->lookup_token(
+    $token = $this->dataStore->lookup_token(
       $consumer, $token_type, $token_field
     );
     if (!$token) {
@@ -747,7 +762,7 @@ Class OAuthRequest
     
     // verify that timestamp is recentish
     $now = time();
-    if (abs($now - $timestamp) > $this->timestamp_threshold) {
+    if (abs($now - $timestamp) > $this->timestampThreshold) {
       throw new OAuthException(
         "Expired timestamp, yours $timestamp, ours $now"
       );
@@ -765,7 +780,7 @@ Class OAuthRequest
       );
     
         // verify that the nonce is uniqueish
-        $found = $this->data_store->lookup_nonce($consumer, $token, $nonce, $timestamp);
+        $found = $this->dataStore->lookup_nonce($consumer, $token, $nonce, $timestamp);
 
         if ($found) Throw New OAuthException("Nonce already used: $nonce");
     }
@@ -790,7 +805,7 @@ Class OAuthDataStore
     // return a new token attached to this consumer
     }
     
-    function new_access_token($token, $consumer, $verifier = null) {
+    function newAccessToken($token, $consumer, $verifier = null) {
     // return a new access token attached to this consumer
     // for the user associated with this token if the request token
     // is authorized
