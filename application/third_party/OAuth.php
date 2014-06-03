@@ -787,7 +787,7 @@ Class OAuthServer
     {
         if( ! $timestamp ) Throw New OAuthException('Missing timestamp parameter. The parameter is required');
 
-        // verify that timestamp is recentish
+        // verify that timestamp is recent(ish)
         $now = time();
 
         if (abs($now - $timestamp) > $this->timestampThreshold)
@@ -805,7 +805,7 @@ Class OAuthServer
             'Missing nonce parameter. The parameter is required'
           );
 
-            // verify that the nonce is uniqueish
+            // verify that the nonce is unique(ish)
             $found = $this->dataStore->lookupNonce($consumer, $token, $nonce, $timestamp);
 
             if ($found) Throw New OAuthException("Nonce already used: $nonce");
