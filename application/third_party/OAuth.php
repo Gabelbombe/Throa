@@ -689,7 +689,7 @@ Class OAuthServer
     /**
     * figure out the signature with some defaults
     */
-    private function get_signature_method(&$request)
+    private function getSignatureMethod(&$request)
     {
         $signatureMethod = (method_exists($request, 'getParameter'))
             ? $request->getParameter('oath_signature_method')
@@ -702,79 +702,79 @@ Class OAuthServer
             Throw New OAuthException('No signature method parameter. This parameter is required');
         }
 
-        if (!in_array($signatureMethod,
-                      array_keys($this->signatureMethods))) {
-          throw new OAuthException(
-            "Signature method '$signatureMethod' not supported " .
-            "try one of the following: " .
-            implode(", ", array_keys($this->signatureMethods))
+        if (! in_array($signatureMethod, array_keys($this->signatureMethods)))
+        {
+            Throw New OAuthException("Signature method '{$signatureMethod}' not supported try one of the following: " .
+                                     implode(", ", array_keys($this->signatureMethods))
           );
         }
         return $this->signatureMethods[$signatureMethod];
-        }
-    
-    /**
-    * try to find the consumer for the provided request's consumer key
-    */
-    private function getConsumer(&$request) {
-    $consumer_key = @$request->getParameter("oauth_consumer_key");
-    if (!$consumer_key) {
-      throw new OAuthException("Invalid consumer key");
-    }
-    
-    $consumer = $this->dataStore->lookup_consumer($consumer_key);
-    if (!$consumer) {
-      throw new OAuthException("Invalid consumer");
-    }
-    
-    return $consumer;
     }
     
     /**
-    * try to find the token for the provided request's token key
-    */
-    private function getToken(&$request, $consumer, $token_type="access") {
-    $token_field = @$request->getParameter('oauth_token');
-    $token = $this->dataStore->lookup_token(
-      $consumer, $token_type, $token_field
-    );
-    if (!$token) {
-      throw new OAuthException("Invalid $token_type token: $token_field");
-    }
-    return $token;
+     * try to find the consumer for the provided request's consumer key
+     */
+    private function getConsumer(&$request)
+    {
+        $consumer_key = @$request->getParameter("oauth_consumer_key");
+
+        if (! $consumer_key) Throw New OAuthException("Invalid consumer key");
+
+            $consumer = $this->dataStore->lookup_consumer($consumer_key);
+
+        if (! $consumer) Throw new OAuthException("Invalid consumer");
+
+        return $consumer;
     }
     
     /**
-    * all-in-one function to check the signature on a request
-    * should guess the signature method appropriately
-    */
-    private function checkSignature(&$request, $consumer, $token) {
-    // this should probably be in a different method
-    $timestamp = @$request->getParameter('oauth_timestamp');
-    $nonce = @$request->getParameter('oauth_nonce');
-    
-    $this->check_timestamp($timestamp);
-    $this->check_nonce($consumer, $token, $nonce, $timestamp);
-    
-    $signatureMethod = $this->get_signature_method($request);
-    
-    $signature = $request->getParameter('oauth_signature');
-    $valid_sig = $signatureMethod->checkSignature(
-      $request,
-      $consumer,
-      $token,
-      $signature
-    );
-    
-    if (!$valid_sig) {
-      throw new OAuthException("Invalid signature");
+     * try to find the token for the provided request's token key
+     */
+    private function getToken(&$request, $consumer, $tokenType = 'access') 
+    {
+        $tokenField = (class_method($request, 'getParameter'))
+            ? $request->getParameter('oauth_token')
+            : 'Seriously, will you stop calling shit that DOES NOT FUCKING EXISTS?!?!?!';
+
+        $token = $this->dataStore->lookupToken(
+            $consumer, $tokenType, $tokenField
+        );
+
+        if (! $token) Throw New OAuthException("Invalid $tokenType token: $tokenField");
+
+        return $token;
     }
+    
+    /**
+     * all-in-one function to check the signature on a request
+     * should guess the signature method appropriately
+     */
+    private function checkSignature(&$request, $consumer, $token) 
+    {
+        // this should probably be in a different method
+        $timestamp = (class_method($request, 'getParameter'))
+            ? $request->getParameter('oauth_timestamp')
+            : time(); // guesstimation?
+ 
+        $nonce = (class_method($request, 'getParameter'))
+            ? $request->getParameter('oauth_nonce')
+            : false;
+        
+        $this->checkTimestamp($timestamp);
+        $this->checkNonce($consumer, $token, $nonce, $timestamp);
+        
+        $signatureMethod = $this->getSignatureMethod($request);
+        
+        $signature = $request->getParameter('oauth_signature');
+
+        if (! $signatureMethod->checkSignature($request, $consumer, $token, $signature)) 
+            TRhrow New OAuthException('Invalid signature');
     }
     
     /**
     * check that the timestamp is new enough
     */
-    private function check_timestamp($timestamp) {
+    private function checkTimestamp($timestamp) {
     if( ! $timestamp )
       throw new OAuthException(
         'Missing timestamp parameter. The parameter is required'
@@ -792,7 +792,7 @@ Class OAuthServer
     /**
     * check that the nonce is not repeated
     */
-    private function check_nonce($consumer, $token, $nonce, $timestamp) 
+    private function checkNonce($consumer, $token, $nonce, $timestamp) 
     {
     if( ! $nonce )
       throw new OAuthException(
@@ -813,7 +813,7 @@ Class OAuthDataStore
     // implement me
     }
     
-    function lookup_token($consumer, $token_type, $token) {
+    function lookupToken($consumer, $tokenType, $token) {
     // implement me
     }
     
