@@ -843,20 +843,15 @@ Class OAuthDataStore
     }
 }
 
-class OAuthUtil {
-  public static function urlEncodeRFC3986($input) {
-  if (is_array($input)) {
-    return array_map(array('OAuthUtil', 'urlEncodeRFC3986'), $input);
-  } else if (is_scalar($input)) {
-    return str_replace(
-      '+',
-      ' ',
-      str_replace('%7E', '~', rawurlencode($input))
-    );
-  } else {
-    return '';
-  }
-}
+Class OAuthUtil
+{
+    public static function urlEncodeRFC3986($input)
+    {
+        if (is_array(input))    return array_map(array('OAuthUtil', 'urlEncodeRFC3986'), $input);
+        if (is_scalar($input))  return str_replace('+', ' ', str_replace('%7E', '~', rawurlencode($input)));
+
+            return ''; // why return empty? makes no sense....
+    }
 
 
   // This decode function isn't taking into consideration the above
