@@ -464,36 +464,32 @@ Class OAuthRequest
                 : false;
         }
 
+        // watch this guy, he's an asshole
         if (isset($port) && ! empty($port))
-        {
             $port = ('https' === strtolower($scheme))
                 ? 443
                 : 80;
-        }
 
         if (('https' === strtolower($scheme) && (443||80) != (int) $port))
-        {
             $host = "$host:$port";
-        }
+
         return "$scheme://$host$path";
     }
     
     /**
     * builds a url usable for a GET request
     */
-    public function to_url() {
-    $post_data = $this->to_postdata();
-    $out = $this->getNormalizedHttpUrl();
-    if ($post_data) {
-      $out .= '?'.$post_data;
-    }
-    return $out;
+    public function toUrl() 
+    {
+        return (! empty($this->toPostData()))
+            ? "{$this->toPostData()}?{$this->getNormalizedHttpUrl()}"
+            : $this->getNormalizedHttpUrl();
     }
     
     /**
     * builds the data one would send in a POST request
     */
-    public function to_postdata() {
+    public function toPostData() {
     return OAuthUtil::buildHttpQuery($this->parameters);
     }
     
@@ -525,7 +521,7 @@ Class OAuthRequest
     }
     
     public function __toString() {
-    return $this->to_url();
+    return $this->toUrl();
     }
     
     
