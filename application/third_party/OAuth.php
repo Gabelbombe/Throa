@@ -471,7 +471,7 @@ Class OAuthRequest
                 : 80;
         }
 
-        if (('https' === strtolower($scheme) && (443||80) !== (int) $port))
+        if (('https' === strtolower($scheme) && (443||80) != (int) $port))
         {
             $host = "$host:$port";
         }
