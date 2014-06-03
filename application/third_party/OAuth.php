@@ -2,11 +2,12 @@
 /**
  * Generic exception class
  */
+/*
 if (! class_exists('OAuthException'))
 {
-    Class OAuthException Extends Exception { /** pass */ }
+    Class OAuthException Extends Exception { }
 }
-
+*/
 Class OAuthConsumer
 {
     public $key;
@@ -358,8 +359,8 @@ Class OAuthRequest
     public static function from_consumer_and_token($consumer, $token, $httpMethod, $httpUrl, $parameters=NULL) {
     @$parameters or $parameters = array();
     $defaults = array("oauth_version" => OAuthRequest::$version,
-                      "oauth_nonce" => OAuthRequest::generate_nonce(),
-                      "oauth_timestamp" => OAuthRequest::generate_timestamp(),
+                      "oauth_nonce" => OAuthRequest::generateNonce(),
+                      "oauth_timestamp" => OAuthRequest::generateTimestamp(),
                       "oauth_consumer_key" => $consumer->key);
     if ($token)
       $defaults['oauth_token'] = $token->key;
@@ -369,7 +370,7 @@ Class OAuthRequest
     return new OAuthRequest($httpMethod, $httpUrl, $parameters);
     }
     
-    public function set_parameter($name, $value, $allow_duplicates = true) {
+    public function setParameter($name, $value, $allow_duplicates = true) {
     if ($allow_duplicates && isset($this->parameters[$name])) {
       // We have already added parameter(s) with this name, so add to the list
       if (is_scalar($this->parameters[$name])) {
@@ -500,74 +501,75 @@ Class OAuthRequest
     }
     
     /**
-    * builds the Authorization: header
-    */
-    public function to_header($realm=null) {
-    $first = true;
-    if($realm) {
-      $out = 'Authorization: OAuth realm="' . OAuthUtil::urlEncodeRFC3986($realm) . '"';
-      $first = false;
-    } else
-      $out = 'Authorization: OAuth';
-    
-    $total = array();
-    foreach ($this->parameters as $k => $v) {
-      if (substr($k, 0, 5) != "oauth") continue;
-      if (is_array($v)) {
-        throw new OAuthException('Arrays not supported in headers');
-      }
-      $out .= ($first) ? ' ' : ',';
-      $out .= OAuthUtil::urlEncodeRFC3986($k) .
-              '="' .
-              OAuthUtil::urlEncodeRFC3986($v) .
-              '"';
-      $first = false;
-    }
-    return $out;
-    }
-    
-    public function __toString() {
-    return $this->toUrl();
-    }
-    
-    
-    public function sign_request($signature_method, $consumer, $token) {
-    $this->set_parameter(
-      "oauth_signature_method",
-      $signature_method->getName(),
-      false
-    );
-    $signature = $this->buildSignature($signature_method, $consumer, $token);
-    $this->set_parameter("oauth_signature", $signature, false);
+     * builds the Authorization: header
+     */
+    public function toHeader($realm = null)
+    {
+        $first = true;
+
+        if($realm)
+        {
+            $out = 'Authorization: OAuth realm="' . OAuthUtil::urlEncodeRFC3986($realm) . '"';
+            $first = false;
+        } else {
+            $out = 'Authorization: OAuth';
+        }
+
+        foreach ($this->parameters AS $k => $v)
+        {
+            if (substr($k, 0, 5) != "oauth") continue;
+            if (is_array($v)) Throw New \OAuthException('Arrays not supported in headers');
+
+            $out .= ($first)
+              ? ' '
+              : ',';
+
+            $out .= "{OAuthUtil::urlEncodeRFC3986($k)}='{OAuthUtil::urlEncodeRFC3986($v)}'";
+            $first = false;
+        }
+
+        return $out;
     }
     
-    public function buildSignature($signature_method, $consumer, $token) {
-    $signature = $signature_method->buildSignature($this, $consumer, $token);
-    return $signature;
+    public function __toString() 
+    {
+        return $this->toUrl();
     }
     
-    /**
-    * util function: current timestamp
-    */
-    private static function generate_timestamp() {
-    return time();
+    public function signRequest($signatureMethod, $consumer, $token) 
+    {
+        $this->setParameter("oauth_signature_method", $signatureMethod->getName(), false);
+        $signature = $this->buildSignature($signatureMethod, $consumer, $token);
+        $this->setParameter("oauth_signature", $signature, false);
+    }
+    
+    public function buildSignature($signatureMethod, $consumer, $token) 
+    {
+        $signature = $signatureMethod->buildSignature($this, $consumer, $token);
+        return $signature;
     }
     
     /**
-    * util function: current nonce
-    */
-    private static function generate_nonce() {
-    $mt = microtime();
-    $rand = mt_rand();
+     * util function: current timestamp
+     */
+    private static function generateTimestamp() 
+    {
+        return time();
+    }
     
-    return md5($mt . $rand); // md5s look nicer than numbers
+    /**
+     * util function: current nonce
+     */
+    private static function generateNonce()
+    {
+        return md5(microtime() . mt_rand()); // md5s look nicer than numbers
     }
-    }
+}
     
     class OAuthServer {
     protected $timestamp_threshold = 300; // in seconds, five minutes
     protected $version = '1.0';             // hi blaine
-    protected $signature_methods = array();
+    protected $signatureMethods = array();
     
     protected $data_store;
     
@@ -575,9 +577,9 @@ Class OAuthRequest
     $this->data_store = $data_store;
     }
     
-    public function add_signature_method($signature_method) {
-    $this->signature_methods[$signature_method->getName()] =
-      $signature_method;
+    public function add_signature_method($signatureMethod) {
+    $this->signature_methods[$signatureMethod->getName()] =
+      $signatureMethod;
     }
     
     // high level functions
@@ -656,24 +658,24 @@ Class OAuthRequest
     * figure out the signature with some defaults
     */
     private function get_signature_method(&$request) {
-    $signature_method =
+    $signatureMethod =
         @$request->getParameter("oauth_signature_method");
     
-    if (!$signature_method) {
+    if (!$signatureMethod) {
       // According to chapter 7 ("Accessing Protected Ressources") the signature-method
       // parameter is required, and we can't just fallback to PLAINTEXT
       throw new OAuthException('No signature method parameter. This parameter is required');
     }
     
-    if (!in_array($signature_method,
+    if (!in_array($signatureMethod,
                   array_keys($this->signature_methods))) {
       throw new OAuthException(
-        "Signature method '$signature_method' not supported " .
+        "Signature method '$signatureMethod' not supported " .
         "try one of the following: " .
         implode(", ", array_keys($this->signature_methods))
       );
     }
-    return $this->signature_methods[$signature_method];
+    return $this->signature_methods[$signatureMethod];
     }
     
     /**
@@ -719,10 +721,10 @@ Class OAuthRequest
     $this->check_timestamp($timestamp);
     $this->check_nonce($consumer, $token, $nonce, $timestamp);
     
-    $signature_method = $this->get_signature_method($request);
+    $signatureMethod = $this->get_signature_method($request);
     
     $signature = $request->getParameter('oauth_signature');
-    $valid_sig = $signature_method->checkSignature(
+    $valid_sig = $signatureMethod->checkSignature(
       $request,
       $consumer,
       $token,
