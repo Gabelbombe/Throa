@@ -548,8 +548,17 @@ Class OAuthRequest
     
     public function signRequest($signatureMethod, $consumer, $token) 
     {
-        $this->setParameter("oauth_signature_method", $signatureMethod->getName(), false);
+        $this->setParameter(
+            'oauth_signature_method',
+            (
+                method_exists($signatureMethod, 'getName')
+                    ? $this->getName()
+                    : false
+            ),
+            false);
+
         $signature = $this->buildSignature($signatureMethod, $consumer, $token);
+
         $this->setParameter("oauth_signature", $signature, false);
     }
     
