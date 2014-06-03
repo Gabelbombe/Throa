@@ -555,8 +555,10 @@ Class OAuthRequest
     
     public function buildSignature($signatureMethod, $consumer, $token) 
     {
-        $signature = $signatureMethod->buildSignature($this, $consumer, $token);
-        return $signature;
+        // oikology, check class before __call otherwise hurt imminent.....
+        return (method_exists($signatureMethod, 'buildSignature'))
+            ? $signatureMethod->buildSignature($this, $consumer, $token)
+            : false;
     }
     
     /**
