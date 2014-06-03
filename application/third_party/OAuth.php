@@ -413,7 +413,7 @@ Class OAuthRequest
           unset($params['oauth_signature']);
         }
         
-        return OAuthUtil::buildHttpQuery(($params);
+        return OAuthUtil::buildHttpQuery($params);
     }
     
     /**
@@ -426,8 +426,8 @@ Class OAuthRequest
     public function getSignatureBaseString() 
     {
         $parts = [
-            $this->get_normalized_http_method(),
-            $this->get_normalized_http_url(),
+            $this->getNormalizedHttpMethod(),
+            $this->getNormalizedHttpUrl(),
             $this->getSignableParameters(),
         ];
     
@@ -439,29 +439,43 @@ Class OAuthRequest
     /**
     * just uppercases the http method
     */
-    public function get_normalized_http_method() {
-    return strtoupper($this->httpMethod);
+    public function getNormalizedHttpMethod() 
+    {
+        return strtoupper($this->httpMethod);
     }
     
     /**
     * parses the url and rebuilds it to be
     * scheme://host/path
     */
-    public function get_normalized_http_url() {
-    $parts = parse_url($this->httpUrl);
-    
-    $port = @$parts['port'];
-    $scheme = $parts['scheme'];
-    $host = $parts['host'];
-    $path = @$parts['path'];
-    
-    $port or $port = ($scheme == 'https') ? '443' : '80';
-    
-    if (($scheme == 'https' && $port != '443')
-        || ($scheme == 'http' && $port != '80')) {
-      $host = "$host:$port";
-    }
-    return "$scheme://$host$path";
+    public function getNormalizedHttpUrl() 
+    {
+        $port   = // variable declaration so the IDE stops snivelling
+        $scheme =
+        $host   =
+        $path   = false;
+
+        $parts = parse_url($this->httpUrl);
+
+        foreach(['port', 'scheme', 'host', 'path'] AS $variable)
+        {
+            $$variable =  (isset($parts[$variable]) && ! empty($parts[$variable]))
+                ? $variable
+                : false;
+        }
+
+        if (isset($port) && ! empty($port))
+        {
+            $port = ('https' === strtolower($scheme))
+                ? 443
+                : 80;
+        }
+
+        if (('https' === strtolower($scheme) && (443||80) !== (int) $port))
+        {
+            $host = "$host:$port";
+        }
+        return "$scheme://$host$path";
     }
     
     /**
@@ -469,7 +483,7 @@ Class OAuthRequest
     */
     public function to_url() {
     $post_data = $this->to_postdata();
-    $out = $this->get_normalized_http_url();
+    $out = $this->getNormalizedHttpUrl();
     if ($post_data) {
       $out .= '?'.$post_data;
     }
@@ -480,7 +494,7 @@ Class OAuthRequest
     * builds the data one would send in a POST request
     */
     public function to_postdata() {
-    return OAuthUtil::buildHttpQuery(($this->parameters);
+    return OAuthUtil::buildHttpQuery($this->parameters);
     }
     
     /**
@@ -905,7 +919,7 @@ class OAuthUtil {
     return $parsed_parameters;
   }
 
-  public static function buildHttpQuery(($params) {
+  public static function buildHttpQuery($params) {
     if (!$params) return '';
 
     // Urlencode both keys and values
